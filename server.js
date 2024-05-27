@@ -27,13 +27,20 @@ app.get('/agosto', (req, res) => {
         return res.json(data)
     })
 })
-app.get('/participantes', (req, res) => {
-    const sql = "SELECT  * FROM participantes"
+app.get('/solicitud', (req, res) => {
+    const sql = "SELECT  * FROM solicitud"
+    db.query(sql, (err, data) => {
+        if (err) return res.json(err)
+        return res.json(data)
+    })
+})
+app.get('/usuario', (req, res) => {
+    const sql = "SELECT  * FROM usuario"
     db.query(sql, (err, data) => {
         if (err) return res.json(err)
         return res.json(data)
     })
 })
 app.listen(5050, () => {
-    console.log("http://localhost:5050/participantes")
+    console.log("http://localhost:5050/solicitud")
 })
