@@ -1,14 +1,32 @@
 const express = require('express')
 const mysql = require('mysql')
 const cors = require('cors')
-
+const multer = require('multer');
 
 const app = express()
 app.use(cors())
-// servername : "localhost:3306",
-// username : "grupodev_speratta",
-// password : "Santiago@2024",
-// database : "grupodev_golden",
+const fs = require('fs');
+const uploadPath = 'C:/Users/DEPIT-1/Desktop/lgp/front/public/assets';
+
+if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = 'C:/Users/DEPIT-1/Desktop/lgp/front/public/assets';
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    },
+});
+
+const upload = multer({ storage: storage });
+
+app.post('/upload', upload.single('image'), (req, res) => {
+    res.send('Archivo subido con éxito');
+});
 const db = mysql.createConnection({
     host: "localhost",
     user: 'root',
@@ -41,6 +59,10 @@ app.get('/usuario', (req, res) => {
         return res.json(data)
     })
 })
+
 app.listen(5050, () => {
     console.log("http://localhost:5050/solicitud")
 })
+
+
+
