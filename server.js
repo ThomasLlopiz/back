@@ -8,6 +8,14 @@ app.use(cors())
 const fs = require('fs');
 const uploadPath = 'C:/Users/DEPIT-1/Desktop/lgp/front/public/assets';
 
+
+const db = mysql.createConnection({
+    host: "localhost",
+    user: 'root',
+    password: '',
+    database: 'cartones'
+})
+
 if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -27,13 +35,6 @@ const upload = multer({ storage: storage });
 app.post('/upload', upload.single('image'), (req, res) => {
     res.send('Archivo subido con éxito');
 });
-const db = mysql.createConnection({
-    host: "localhost",
-    user: 'root',
-    password: '',
-    database: 'cartones'
-})
-
 app.get('/', (req, res) => {
     return res.json("server on")
 })
