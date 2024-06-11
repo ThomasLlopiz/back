@@ -4,13 +4,9 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-
 const app = express();
+
 app.use(cors());
-
-const uploadPath = 'C:/Users/DEPIT-1/Desktop/lgp/front/public/assets';
-
-// Configuración de la base de datos
 const db = mysql.createConnection({
     host: "localhost",
     user: 'root',
@@ -18,41 +14,77 @@ const db = mysql.createConnection({
     database: 'cartones'
 });
 
-// Verificar que el directorio de destino exista, si no, crearlo
-if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true });
+
+
+const direccionHome = 'C:/Users/DEPIT-1/Desktop/lgp/front/public/assets/home/';
+const direccionAwards = 'C:/Users/DEPIT-1/Desktop/lgp/front/public/assets/awards/';
+
+// Ensure directories exist
+if (!fs.existsSync(direccionHome)) {
+    fs.mkdirSync(direccionHome, { recursive: true });
+}
+if (!fs.existsSync(direccionAwards)) {
+    fs.mkdirSync(direccionAwards, { recursive: true });
 }
 
-// Configuración de multer para almacenar archivos
-const storage = multer.diskStorage({
+const storageHome = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadPath);
+        cb(null, direccionHome);
     },
     filename: (req, file, cb) => {
         cb(null, file.originalname);
     },
 });
 
-const upload = multer({ storage: storage });
+const storageAwards = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, direccionAwards);
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    },
+});
 
-// Ruta para subir una imagen y actualizar el nombre en la base de datos
-app.post('/upload/:id', upload.single('image'), (req, res) => {
+const uploadHome = multer({ storage: storageHome });
+const uploadAwards = multer({ storage: storageAwards });
+
+app.post('/uploadHome/:id', uploadHome.single('image'), (req, res) => {
     const id = req.params.id;
     const filename = req.file.originalname;
     const sql = "UPDATE imagenes SET nameImg = ? WHERE id = ?";
-    
     db.query(sql, [filename, id], (err, result) => {
         if (err) return res.json(err);
         res.send('Archivo subido y nombre actualizado con éxito');
     });
 });
 
-// Ruta para verificar el estado del servidor
-app.get('/', (req, res) => {
-    return res.json("server on");
+app.post('/uploadAwards/:id', uploadAwards.single('image'), (req, res) => {
+    const id = req.params.id;
+    const filename = req.file.originalname;
+    const sql = "UPDATE awards SET nameImg = ? WHERE id = ?";
+    db.query(sql, [filename, id], (err, result) => {
+        if (err) return res.json(err);
+        res.send('Archivo subido y nombre actualizado con éxito');
+    });
 });
 
-// Ruta para obtener datos de la tabla 'agosto'
+
+app.get('/imagenes', (req, res) => {
+    const sql = "SELECT  * FROM imagenes";
+    db.query(sql, (err, data) => {
+        if (err) return res.json(err);
+        return res.json(data);
+    });
+});
+app.get('/awards', (req, res) => {
+    const sql = "SELECT  * FROM awards";
+    db.query(sql, (err, data) => {
+        if (err) return res.json(err);
+        return res.json(data);
+    });
+});
+
+
 app.get('/mayo', (req, res) => {
     const sql = "SELECT  * FROM mayo";
     db.query(sql, (err, data) => {
@@ -61,16 +93,6 @@ app.get('/mayo', (req, res) => {
     });
 });
 
-// Ruta para obtener datos de la tabla 'imagenes'
-app.get('/imagenes', (req, res) => {
-    const sql = "SELECT  * FROM imagenes";
-    db.query(sql, (err, data) => {
-        if (err) return res.json(err);
-        return res.json(data);
-    });
-});
-
-// Ruta para obtener datos de la tabla 'solicitud'
 app.get('/solicitud', (req, res) => {
     const sql = "SELECT  * FROM solicitud";
     db.query(sql, (err, data) => {
@@ -78,8 +100,6 @@ app.get('/solicitud', (req, res) => {
         return res.json(data);
     });
 });
-
-// Ruta para obtener datos de la tabla 'usuario'
 app.get('/usuario', (req, res) => {
     const sql = "SELECT  * FROM usuario";
     db.query(sql, (err, data) => {
@@ -88,21 +108,9 @@ app.get('/usuario', (req, res) => {
     });
 });
 
-// Ruta para obtener la lista de imágenes desde el directorio de assets
-app.get('/imagenes', (req, res) => {
-    fs.readdir(uploadPath, (err, files) => {
-        if (err) {
-            return res.status(500).send('Error leyendo el directorio');
-        }
-        const images = files.map((file, index) => ({
-            id: index,
-            filename: file
-        }));
-        res.json(images);
-    });
+app.get('/', (req, res) => {
+    return res.json("server on");
 });
-
-// Iniciar el servidor
 app.listen(5050, () => {
     console.log("Servidor escuchando en http://localhost:5050/");
 });
